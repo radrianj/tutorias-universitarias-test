@@ -101,6 +101,38 @@ services:
       - db-tutorias
       - rabbitmq # Asegura que RabbitMQ inicie antes que este servicio
 
+  # --- Servicio de Monitoreo con Prometheus ---
+# --- Servicio de Monitoreo con Prometheus ---
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+    - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+    - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+    - "9090:9090"
+    depends_on:
+    - ms-tutorias
+
+
+  # --- Servicio de Visualización con Grafana ---
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3005:3000"
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+
+
   # --- Cliente Web Interactivo ---
   client-sim:
     build: ./client-mobile-sim
@@ -171,3 +203,6 @@ volumes:
   postgres_data_agenda:
   postgres_data_tutorias:
   rabbitmq_data:
+  prometheus_data:
+  grafana_data:
+

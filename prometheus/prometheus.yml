@@ -1,0 +1,8 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'ms-tutorias'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['ms-tutorias:3000']
