@@ -7,10 +7,46 @@ const correlationIdMiddleware = require('./api/middlewares/correlationId.middlew
 const amqp = require('amqplib'); 
 const notificacionService = require('./domain/services/notificacion.service'); //  Importar el servicio de notificaciones
 const messageProducer = require('./infrastructure/messaging/message.producer'); // <-- IMPORTAR PRODUCTOR
+// NUEVO: métricas Prometheus
+const client = require('prom-client');
 
 const PORT = process.env.PORT || 3003;
 
 const app = express();
+
+// ===== CONFIGURACIÓN PROMETHEUS =====
+const register = new client.Registry();
+
+// Métricas por defecto (CPU, memoria, etc.)
+client.collectDefaultMetrics({ register });
+
+// Métrica personalizada para peticiones HTTP
+const httpRequestCounter = new client.Counter({
+  name: 'notificaciones_http_requests_total',
+  help: 'Total de solicitudes HTTP en ms-notificaciones',
+  labelNames: ['method', 'route', 'status']
+});
+
+register.registerMetric(httpRequestCounter);
+
+// Middleware para contar peticiones (antes de las rutas)
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    httpRequestCounter.inc({
+      method: req.method,
+      route: req.route ? req.route.path : req.path,
+      status: res.statusCode
+    });
+  });
+  next();
+});
+
+// Endpoint /metrics (antes de /notificaciones)
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.end(await register.metrics());
+});
+
 app.use(express.json());
 app.use(correlationIdMiddleware); // Middleware para manejar el Correlation ID
 app.use('/notificaciones', notificacionesRouter);

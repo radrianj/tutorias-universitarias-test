@@ -2,7 +2,32 @@ global:
   scrape_interval: 15s
 
 scrape_configs:
+  # Microservicio de Autenticación
+  - job_name: 'ms-auth'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['ms-auth:4000']
+      
+  # Microservicio de Tutorías (Orquestador)
   - job_name: 'ms-tutorias'
     metrics_path: /metrics
     static_configs:
       - targets: ['ms-tutorias:3000']
+
+  # Microservicio de Usuarios
+  - job_name: 'ms-usuarios'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['ms-usuarios:3001']
+
+  # Microservicio de Agenda
+  - job_name: 'ms-agenda'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['ms-agenda:3002']
+
+  # Microservicio de Notificaciones
+  - job_name: 'ms-notificaciones'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['ms-notificaciones:3003']

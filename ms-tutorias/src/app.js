@@ -14,6 +14,25 @@ const app = express();
 const register = new client.Registry();
 client.collectDefaultMetrics({ register });
 
+const httpRequestCounter = new client.Counter({
+  name: 'tutorias_http_requests_total',
+  help: 'Total de solicitudes HTTP en ms-tutorias',
+  labelNames: ['method', 'route', 'status'],
+});
+register.registerMetric(httpRequestCounter);
+
+// Middleware para contar peticiones (antes de las rutas)
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    httpRequestCounter.inc({
+      method: req.method,
+      route: req.route ? req.route.path : req.path,
+      status: res.statusCode,
+    });
+  });
+  next();
+});
+
 
 // Middlewares esenciales
 app.use(express.json()); // Permite al servidor entender y procesar bodies en formato JSON
