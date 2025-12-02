@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-agenda
+  namespace: tutorias
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ms-agenda
+  template:
+    metadata:
+      labels:
+        app: ms-agenda
+    spec:
+      containers:
+        - name: ms-agenda
+          image: ms-agenda:1.0
+          ports:
+            - containerPort: 3002
+          env:
+            - name: NODE_ENV
+              value: "production"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-agenda
+  namespace: tutorias
+spec:
+  selector:
+    app: ms-agenda
+  ports:
+    - port: 3002
+      targetPort: 3002
+      protocol: TCP
+  type: ClusterIP

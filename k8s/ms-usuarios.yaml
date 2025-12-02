@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-usuarios
+  namespace: tutorias
+spec:
+  replicas: 1  # número de Pods; si uno muere, K8s crea otro
+  selector:
+    matchLabels:
+      app: ms-usuarios
+  template:
+    metadata:
+      labels:
+        app: ms-usuarios
+    spec:
+      containers:
+        - name: ms-usuarios
+          image: ms-usuarios:1.0  # imagen que construimos en el paso 3
+          ports:
+            - containerPort: 3001  # puerto interno del microservicio
+          env:
+            # Aquí pondrías las variables de entorno que ya usas en Docker/Compose
+            - name: NODE_ENV
+              value: "production"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-usuarios
+  namespace: tutorias
+spec:
+  selector:
+    app: ms-usuarios
+  ports:
+    - port: 3001       # puerto del Service (dentro del cluster)
+      targetPort: 3001 # puerto del contenedor
+      protocol: TCP
+  type: ClusterIP      # solo accesible dentro del cluster

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-tutorias
+  namespace: tutorias
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ms-tutorias
+  template:
+    metadata:
+      labels:
+        app: ms-tutorias
+    spec:
+      containers:
+        - name: ms-tutorias
+          image: ms-tutorias:1.0
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-tutorias
+  namespace: tutorias
+spec:
+  selector:
+    app: ms-tutorias
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+  type: ClusterIP

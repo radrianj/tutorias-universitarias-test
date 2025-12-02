@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kong-migrations
+  namespace: tutorias
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: kong-migrations
+          image: kong:3.6
+          env:
+            - name: KONG_DATABASE
+              value: "postgres"
+            - name: KONG_PG_HOST
+              value: "kong-postgres.tutorias.svc.cluster.local"
+            - name: KONG_PG_DATABASE
+              value: "kong"
+            - name: KONG_PG_USER
+              valueFrom:
+                secretKeyRef:
+                  name: kong-postgres-secret
+                  key: postgres-user
+            - name: KONG_PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kong-postgres-secret
+                  key: postgres-password
+          command: ["/bin/sh", "-c"]
+          args:
+            - kong migrations bootstrap && kong migrations up && kong migrations finish
